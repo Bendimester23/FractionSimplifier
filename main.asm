@@ -199,7 +199,7 @@ enterdenom:
     mov eax,SYS_EXIT
     int 80h
 
-divideZeroException:
+divideZeroException: ; no more softlock
     push eax
     mov ecx, dzeroException
     mov edx, dzeroLen
