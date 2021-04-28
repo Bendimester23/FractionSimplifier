@@ -5,17 +5,30 @@ STDIN     equ 0
 STDOUT    equ 1
 
 section .bss
-    out: resb 6
-    tempnum: resb 6
-    tempdenom: resb 6
-    innum: resb 6
-    indenom: resb 6
+    tempnum: resb 12
+    tempdenom: resb 12
+    innum: resb 12
+    indenom: resb 12
 
 section .data
     greet db 'Hello, user!', 0xA
     greetLengt equ $ - greet
     newline db '', 0xA
     newlineLength equ $ - newline
+    dzeroException db 'Cannot divide by zero!', 0xA, "Please enter another denominator!", 0xA
+    dzeroLen equ $ - dzeroException
+    instOne db 'Enter a numerator!', 0xA
+    instOneLen equ $ - instOne
+    instTwo db 'Enter a denominator!', 0xA
+    instTwoLen equ $ - instTwo
+    num db 'Your numerator: '
+    numLen equ $ - num
+    denom db 'Your denominator: '
+    denomLen equ $ - denom
+    computing db '* Simplifying your fraction... *', 0xA
+    computingLen equ $ - computing
+    s2 db '********************************', 0xA ; could have used times here btw
+    s2Len equ $ - s2
 
 section .text
     global _start
@@ -78,33 +91,37 @@ showeaxd:
 gcd: ;finds the greatest common divisor of AX and BX, return on CX
     jmp cond
     loop01:
-        cmp ax,bx
+        cmp eax,ebx
         jg subtr
-        sub bx,ax
+        sub ebx,eax
     cond:
-    cmp ax,bx
+    cmp eax,ebx
     jne loop01
-    mov cx,bx
-    xor ax,ax
-    xor bx,bx
+    mov ecx,ebx
+    xor eax,eax
+    xor ebx,ebx
     ret
     subtr:
-        sub ax,bx
+        sub eax,ebx
         jmp cond
 
 ;input: numerator, denominator
 %macro simplify_fraction 2 
     mov [tempnum],%1
     mov [tempdenom],%2
-    mov ax,%1
-    mov bx,%2
+    mov eax,%1
+    mov ebx,%2
     call gcd
-    mov ax,[tempnum]
-    idiv cl
-    xchg ax,[tempnum]
-    mov ax,[tempdenom]
-    idiv cl
-    xchg ax,[tempdenom]
+    mov edx,0
+    mov eax,[tempnum]
+    cdq
+    idiv ecx
+    xchg eax,[tempnum]
+    mov edx,0
+    mov eax,[tempdenom]
+    cdq
+    idiv ecx
+    xchg eax,[tempdenom]
 
 %endmacro
 ;input on edx, output on eax
@@ -125,29 +142,69 @@ atoi:
     ret
 
 _start:
-    mov ecx,greet
+    mov ecx,greet ; greet
     mov edx,greetLengt
     call print
 
-    call read
+    mov ecx,instOne ; enter numerator
+    mov edx,instOneLen
+    call print
+
+    call read ; read
     call atoi
     mov [innum],eax
 
+    mov ecx,instTwo
+    mov edx,instTwoLen
+    call print
+
+enterdenom:
     call read
     call atoi
+    cmp eax,0
+    je divideZeroException
     mov [indenom],eax
 
-    mov eax,[innum]
+    mov ecx,s2
+    mov edx,s2Len
+    call print
+
+    push ecx ; fancy computing message
+    push edx
+    mov ecx,computing
+    mov edx,computingLen
+    call print
+    pop edx
+    pop ecx
+    call print
+
+    mov eax,[innum] ; simplify fraction
     mov ebx,[indenom]
-    simplify_fraction ax,bx
-    call linebreak
+    simplify_fraction eax,ebx
+
+    mov ecx,num ; print numerator
+    mov edx,numLen
+    call print
     mov eax,[tempnum]
     call showeaxd
     call linebreak
+
+    mov ecx,denom ; print denominator
+    mov edx,denomLen
+    call print
     mov eax,[tempdenom]
     call showeaxd
     call linebreak
 
     mov eax,SYS_EXIT
     int 80h
+
+divideZeroException:
+    push eax
+    mov ecx, dzeroException
+    mov edx, dzeroLen
+    call print
+    pop eax
+    jmp enterdenom
+
 
