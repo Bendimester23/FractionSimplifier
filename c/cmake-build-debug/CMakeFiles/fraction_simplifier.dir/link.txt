@@ -1,0 +1,1 @@
+/usr/bin/cc -g CMakeFiles/fraction_simplifier.dir/main.c.o -o fraction_simplifier 
