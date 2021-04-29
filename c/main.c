@@ -1,39 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-long gcd(long a, long b) {
-    long max;
-    if (a > b) {
-        max = b;
-    } else {
-        max = a;
-    }
-    long gcb = 1;
-
-    for (int i = 1; i <= max; ++i) {
-        if (a % i == 0 && b % i == 0 && i > gcb) {
-            gcb = i;
-        }
-    }
-    return gcb;
+long gcd(long a, long b)
+{
+    if(a == 0) return b;
+    return gcd(b%a, a);
 }
 
+char* a;
+char* b;
+char* string;
+
 int main() {
+    a = malloc(24);
+    b = malloc(24);
     printf("Hello, User!\n");
-    char a[32];
-    char b[32];
-    printf("Enter top number!\n");
-    if (fgets(a, 32, stdin) == NULL) {
+    printf("Enter numerator!\n");
+    if (fgets(a, 24, stdin) == NULL) {
         return -1;
     }
 
-    printf("Enter bottom number!\n");
-    if (fgets(b, 32, stdin) == NULL) {
+    printf("Enter denominator!\n");
+    if (fgets(b, 24, stdin) == NULL) {
         return -1;
     }
-
-
-    char * string;
 
     long aa = strtol(a, &string, 10);
     long bb = strtol(b, &string, 10);
@@ -44,5 +34,3 @@ int main() {
 
     return 0;
 }
-
-
